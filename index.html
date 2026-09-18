@@ -4,10 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>بطاقة العميل</title>
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="application-name" content="بطاقتي">
-<meta name="apple-mobile-web-app-title" content="بطاقتي">
+<meta name="application-name" content="بقالة الهدى">
+<meta name="apple-mobile-web-app-title" content="بقالة الهدى">
 <meta name="theme-color" content="#0f1620">
 <style>
   :root{ --bg:#0f1620; --card:#fff; --ink:#10202b; --muted:#5b6b78; --accent:#2e9e6f; }
@@ -32,11 +34,50 @@
        border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.7}
   .tip b{color:#8fe3bf}
   .err{background:#ffffff12;padding:20px;border-radius:14px}
+
+  /* عند التشغيل كتطبيق مثبَّت (Standalone): يعرض الكود ملء الشاشة فقط بلا أي زوائد */
+  body.standalone{padding:0}
+  body.standalone .tip{display:none}
+  body.standalone .card{max-width:none;width:100%;height:100vh;height:100dvh;border-radius:0;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        box-shadow:none;padding:24px}
+  body.standalone .bc{width:100%;max-width:420px}
+  body.standalone .bc svg{height:150px}
+  body.standalone .shop{font-size:26px}
+  body.standalone .name{font-size:32px}
+  body.standalone .cnum .v{font-size:56px}
+  body.standalone .code{font-size:26px}
 </style>
 </head>
 <body>
   <div id="app"></div>
 <script>
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+  document.body.classList.add('standalone');
+}
+
+// بطاقة كل عميل لها كود مختلف في الرابط (#code=...)، فنبني ملف الـ manifest ديناميكياً
+// بحيث "start_url" يحفظ نفس رابط هذا العميل بالضبط — بهذا تفتح الأيقونة المثبَّتة بطاقته هو، لا بطاقة عامة.
+(function setupManifest(){
+  const base = location.origin + location.pathname.replace(/[^/]*$/, '');
+  const manifest = {
+    name: 'بقالة الهدى', short_name: 'بقالة الهدى',
+    start_url: location.href, scope: base,
+    display: 'standalone', background_color: '#0f1620', theme_color: '#0f1620', dir: 'rtl', lang: 'ar',
+    icons: [
+      { src: base + 'icon-192.png', sizes: '192x192', type: 'image/png' },
+      { src: base + 'icon-512.png', sizes: '512x512', type: 'image/png' },
+      { src: base + 'icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+    ],
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = URL.createObjectURL(blob);
+  document.head.appendChild(link);
+})();
+
 const C128=["212222","222122","222221","121223","121322","131222","122213","122312","132212","221213","221312","231212","112232","122132","122231","113222","123122","123221","223211","221132","221231","213212","223112","312131","311222","321122","321221","312212","322112","322211","212123","212321","232121","111323","131123","131321","112313","132113","132311","211313","231113","231311","112133","112331","132131","113123","113321","133121","313121","211331","231131","213113","213311","213131","311123","311321","331121","312113","312311","332111","314111","221411","431111","111224","111422","121124","121421","141122","141221","112214","112412","122114","122411","142112","142211","241211","221114","413111","241112","134111","111242","121142","121241","114212","124112","124211","411212","421112","421211","212141","214121","412121","111143","111341","131141","114113","114311","411113","411311","113141","114131","311141","411131","211412","211214","211232","2331112"];
 function code128svg(text){
   const vals=[104]; for(const ch of text) vals.push(ch.charCodeAt(0)-32);
@@ -53,25 +94,28 @@ function param(k){
   const m=new URLSearchParams(h);
   return m.get(k)||'';
 }
-const shop=param('shop'), name=param('name'), code=param('code');
+
+// اسم المحل ثابت هنا (هذه الصفحة خاصة ببقالة الهدى) — الرابط المرسل للعميل يحمل الكود فقط، فيبقى قصيراً
+const SHOP_NAME = 'بقالة الهدى';
+// دعم روابط قديمة أرسلت shop/name (قبل تقصير الرابط) — تُقرأ إن وُجدت وإلا نتجاهلها
+const code = param('code');
+const legacyName = param('name');
 const app=document.getElementById('app');
+
 if(!code){
   app.innerHTML=`<div class="err">رابط غير صالح — لا يوجد كود بطاقة.</div>`;
 }else{
-  if(shop){ document.title=shop;
-    document.querySelector('meta[name="application-name"]').content=shop;
-    document.querySelector('meta[name="apple-mobile-web-app-title"]').content=shop; }
   const num = (code.match(/-(\d+)$/)||[])[1];
   const numNoZeros = num ? parseInt(num,10) : '';
   const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
   const addTip = isIOS
     ? `لإضافتها كأيقونة: اضغط زر <b>المشاركة</b> ⬆️ ثم <b>«إضافة إلى الشاشة الرئيسية»</b>.`
-    : `لإضافتها كأيقونة: افتح قائمة المتصفح <b>⋮</b> ثم <b>«إضافة إلى الشاشة الرئيسية»</b>.`;
+    : `لإضافتها كأيقونة: افتح قائمة المتصفح <b>⋮</b> ثم <b>«إضافة إلى الشاشة الرئيسية»</b> أو اضغط زر التثبيت إن ظهر.`;
   app.innerHTML=`
     <div class="card">
-      <div class="shop">${esc(shop||'بطاقة العميل')}</div>
+      <div class="shop">${esc(SHOP_NAME)}</div>
       <div class="sub">بطاقة العميل</div>
-      <div class="name">${esc(name||'')}</div>
+      ${legacyName ? `<div class="name">${esc(legacyName)}</div>` : ''}
       <div class="bc">${code128svg(code)}</div>
       <div class="code">${esc(code)}</div>
       ${numNoZeros!=='' ? `<div class="cnum"><div class="l">رقم العميل</div><div class="v">${numNoZeros}</div></div>` : ''}
