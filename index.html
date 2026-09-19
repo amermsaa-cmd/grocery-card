@@ -24,7 +24,7 @@
   .sub{font-size:13px;color:var(--muted);margin-bottom:18px}
   .name{font-size:26px;font-weight:700;margin-bottom:14px}
   .bc{background:#fff;padding:6px 4px;border-radius:10px}
-  .bc svg{width:100%;height:96px;display:block}
+  .bc svg{width:100%;height:auto;display:block}
   .code{direction:ltr;font-size:22px;letter-spacing:3px;font-weight:700;margin-top:10px;color:var(--ink)}
   .cnum{background:#111;color:#fff;border-radius:14px;padding:16px 10px 20px;margin-top:16px}
   .cnum .l{font-size:12px;color:#bbb;letter-spacing:.05em;margin-bottom:6px}
@@ -112,29 +112,7 @@ if(!code){
       ${numNoZeros!=='' ? `<div class="cnum"><div class="l">رقم العميل</div><div class="v">${numNoZeros}</div></div>` : ''}
       <div class="foot">أظهر هذا الباركود عند الشراء</div>
     </div>
-    <div class="tip">${addTip}</div>
-    <div id="dbg" style="margin-top:14px;font-size:11px;color:#8fa0ad;direction:ltr;text-align:center;line-height:1.8"></div>`;
-
-  // سطر تشخيص مؤقت لمعرفة القياسات الحقيقية من الجهاز — سيُحذف بعد حل المشكلة
-  requestAnimationFrame(()=>{
-    const cardEl = document.querySelector('.card');
-    const cr = cardEl.getBoundingClientRect();
-    const br = document.body.getBoundingClientRect();
-    const hr = document.documentElement.getBoundingClientRect();
-    const bodyStyle = getComputedStyle(document.body);
-    const dbg = [
-      'standalone=' + document.body.classList.contains('standalone'),
-      'innerW=' + window.innerWidth,
-      'htmlClientW=' + document.documentElement.clientWidth,
-      'htmlRectW=' + Math.round(hr.width),
-      'bodyRectW=' + Math.round(br.width),
-      'visualVP=' + (window.visualViewport ? Math.round(window.visualViewport.width) : 'n/a') + ' scale=' + (window.visualViewport ? window.visualViewport.scale : 'n/a'),
-      'dpr=' + window.devicePixelRatio,
-      'bodyPad=' + bodyStyle.paddingLeft,
-      'cardW=' + Math.round(cr.width) + ' cardLeft=' + Math.round(cr.left) + ' cardRight=' + Math.round(cr.right),
-    ].join(' | ');
-    document.getElementById('dbg').innerHTML = dbg.split(' | ').join('<br>');
-  });
+    <div class="tip">${addTip}</div>`;
 }
 </script>
 </body>
