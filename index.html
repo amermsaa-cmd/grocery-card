@@ -112,7 +112,26 @@ if(!code){
       ${numNoZeros!=='' ? `<div class="cnum"><div class="l">رقم العميل</div><div class="v">${numNoZeros}</div></div>` : ''}
       <div class="foot">أظهر هذا الباركود عند الشراء</div>
     </div>
-    <div class="tip">${addTip}</div>`;
+    <div class="tip">${addTip}</div>
+    <div id="dbg" style="margin-top:14px;font-size:11px;color:#8fa0ad;direction:ltr;text-align:center;line-height:1.8"></div>`;
+
+  // سطر تشخيص مؤقت لمعرفة القياسات الحقيقية من الجهاز — سيُحذف بعد حل المشكلة
+  requestAnimationFrame(()=>{
+    const cardEl = document.querySelector('.card');
+    const cr = cardEl.getBoundingClientRect();
+    const bodyStyle = getComputedStyle(document.body);
+    const dbg = [
+      'standalone=' + document.body.classList.contains('standalone'),
+      'innerW=' + window.innerWidth,
+      'outerW=' + window.outerWidth,
+      'visualVP=' + (window.visualViewport ? Math.round(window.visualViewport.width) : 'n/a'),
+      'dpr=' + window.devicePixelRatio,
+      'bodyPad=' + bodyStyle.paddingLeft,
+      'cardW=' + Math.round(cr.width),
+      'cardH=' + Math.round(cr.height),
+    ].join(' | ');
+    document.getElementById('dbg').textContent = dbg;
+  });
 }
 </script>
 </body>
