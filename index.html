@@ -119,18 +119,21 @@ if(!code){
   requestAnimationFrame(()=>{
     const cardEl = document.querySelector('.card');
     const cr = cardEl.getBoundingClientRect();
+    const br = document.body.getBoundingClientRect();
+    const hr = document.documentElement.getBoundingClientRect();
     const bodyStyle = getComputedStyle(document.body);
     const dbg = [
       'standalone=' + document.body.classList.contains('standalone'),
       'innerW=' + window.innerWidth,
-      'outerW=' + window.outerWidth,
-      'visualVP=' + (window.visualViewport ? Math.round(window.visualViewport.width) : 'n/a'),
+      'htmlClientW=' + document.documentElement.clientWidth,
+      'htmlRectW=' + Math.round(hr.width),
+      'bodyRectW=' + Math.round(br.width),
+      'visualVP=' + (window.visualViewport ? Math.round(window.visualViewport.width) : 'n/a') + ' scale=' + (window.visualViewport ? window.visualViewport.scale : 'n/a'),
       'dpr=' + window.devicePixelRatio,
       'bodyPad=' + bodyStyle.paddingLeft,
-      'cardW=' + Math.round(cr.width),
-      'cardH=' + Math.round(cr.height),
+      'cardW=' + Math.round(cr.width) + ' cardLeft=' + Math.round(cr.left) + ' cardRight=' + Math.round(cr.right),
     ].join(' | ');
-    document.getElementById('dbg').textContent = dbg;
+    document.getElementById('dbg').innerHTML = dbg.split(' | ').join('<br>');
   });
 }
 </script>
