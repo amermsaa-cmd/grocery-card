@@ -77,7 +77,7 @@ function code128svg(text){
   let x=0, rects='';
   for(const v of vals){ const p=C128[v];
     for(let i=0;i<p.length;i++){ const w=+p[i]; if(i%2===0) rects+=`<rect x="${x}" y="0" width="${w}" height="96" fill="#000"/>`; x+=w; } }
-  return `<svg viewBox="0 0 ${x} 96" preserveAspectRatio="xMidYMid meet">${rects}</svg>`;
+  return `<svg viewBox="0 0 ${x} 96" preserveAspectRatio="none">${rects}</svg>`;
 }
 function esc(s){return String(s).replace(/[<>&"]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[m]));}
 function param(k){
